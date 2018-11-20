@@ -60,3 +60,32 @@ livingRoom = MkRoom { getDescription = Description "living room desc"
                     , getItems = []
                     , getUnits = []
                     }
+
+kitchen = MkRoom { getDescription = Description "kitchen"
+                 , getName = RoomName "Kitchen"
+                 , northExit = Nothing
+                 , eastExit = Nothing
+                 , westExit = Nothing
+                 , southExit = Nothing
+                 , northwestExit = Nothing
+                 , northeastExit = Nothing
+                 , southwestExit = Nothing
+                 , southeastExit = Nothing
+                 , getItems = []
+                 , getUnits = []
+                 }
+
+yard = MkRoom { getDescription = Description "yard"
+              , getName = RoomName "Yard"
+              , northExit = Nothing
+              , eastExit = Nothing
+              , westExit = Nothing
+              , southExit = Nothing
+              , northwestExit = Nothing
+              , northeastExit = Nothing
+              , southwestExit = Nothing
+              , southeastExit = Nothing
+              , getItems = []
+              , getUnits = []
+              }
+
