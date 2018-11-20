@@ -8,6 +8,15 @@ module Lib where
       Look
 -}
 
+{-
+  constants to hold room names
+-}
+let
+  YARD = "Yard"
+  KITCHEN = "Kitchen"
+  LIVINGROOM = "Living Room"
+in
+
 newtype Description = Description String
 newtype RoomName = RoomName String
 newtype ItemName = Itemname String
@@ -84,11 +93,11 @@ hasItem i (name, room) = elem i (getItems room)
 
 
 livingRoom = MkRoom { getDescription = Description "living room desc"
-                    , getName = RoomName "Living Room"
+                    , getName = RoomName LIVINGROOM
                     , northExit = Nothing
                     , eastExit = Nothing
                     , westExit = Nothing
-                    , southExit = Nothing
+                    , southExit = Just KITCHEN
                     , northwestExit = Nothing
                     , northeastExit = Nothing
                     , southwestExit = Nothing
@@ -98,10 +107,10 @@ livingRoom = MkRoom { getDescription = Description "living room desc"
                     }
 
 kitchen = MkRoom { getDescription = Description "kitchen"
-                 , getName = RoomName "Kitchen"
-                 , northExit = Nothing
+                 , getName = RoomName KITCHEN
+                 , northExit = Just LIVINGROOM
                  , eastExit = Nothing
-                 , westExit = Nothing
+                 , westExit = KITCHEN
                  , southExit = Nothing
                  , northwestExit = Nothing
                  , northeastExit = Nothing
@@ -112,9 +121,9 @@ kitchen = MkRoom { getDescription = Description "kitchen"
                  }
 
 yard = MkRoom { getDescription = Description "yard"
-              , getName = RoomName "Yard"
+              , getName = RoomName YARD
               , northExit = Nothing
-              , eastExit = Nothing
+              , eastExit = KITCHEN
               , westExit = Nothing
               , southExit = Nothing
               , northwestExit = Nothing
