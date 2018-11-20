@@ -1,10 +1,4 @@
-module Lib
-    ( someFunc
-    ) where
-
-someFunc :: IO ()
-someFunc = putStrLn "someFunc"
-
+module Lib where
 
 {- Functions:
       Use -- defined per-item
