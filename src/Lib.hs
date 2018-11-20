@@ -41,6 +41,40 @@ data Room =
        , getUnits :: [Unit]
        } deriving (Eq, Show)
 
+
+take :: Rooms -> Player -> Item -> World
+take rs p i =
+  ((removeItem i rs), (addItem i p))
+
+removeItem :: Item -> Rooms -> Rooms
+removeItem i (rd:rs) | rs == [] = [rd]
+                     | hasItem i rd == True = (++) (removeItem' i rd) $ removeItem rs
+                     | otherwise = (++) rd $ removeItem rs
+
+removeItem' :: Item -> (RoomName, Room) -> (RoomName, Room)
+removeItem' i (name, room) =
+  let
+    items = [ i' | i' /= i, i'<-(getItems r)]
+    room' = MkRoom { getItems = items
+                   , getDescription = getDescription room
+                   , getName = getName room
+                   , northExit = northExit room
+                   , eastExit = eastExit room
+                   , westExit = westExit room
+                   , southExit = southExit room
+                   , northeastExit = northeastExit room
+                   , northwestExit = northwestExit room
+                   , southeastExit = southeastExit room
+                   , southwestExit = southwestExit room
+                   , getUnits = getUnits room
+                   }
+  in
+    (name, room')
+
+hasItem :: Item -> (RoomName, Room)
+hasItem i (name, room) = elem i (getItems room)
+
+
 livingRoom = MkRoom { getDescription = Description "living room desc"
                     , getName = RoomName "Living Room"
                     , northExit = Nothing
