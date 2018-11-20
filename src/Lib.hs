@@ -17,34 +17,42 @@ type World = (Rooms, Player)
 
 data Player =
   MkPlayer { getInventory :: Inventory
-         , getLocation :: RoomName
-         , getHealth :: Int
-         } deriving (Eq, Show)
+           , getLocation :: RoomName
+           , getHealth :: Int
+           } deriving (Eq, Show)
 
 data Item =
   MkItem { getName :: ItemName
-       , getUse :: World -> World
-       } deriving (Eq, Show)
+         , getUse :: World -> World
+         } deriving (Eq, Show)
 
 data Room =
   MkRoom { getDescription :: Description
-       , getName :: RoomName
-       , northExit :: Maybe RoomName
-       , eastExit :: Maybe RoomName
-       , westExit :: Maybe RoomName
-       , southExit :: Maybe RoomName
-       , northeastExit :: Maybe RoomName
-       , northwestExit :: Maybe RoomName
-       , southeastExit :: Maybe RoomName
-       , southwestExit :: Maybe RoomName
-       , getItems :: [Item]
-       , getUnits :: [Unit]
-       } deriving (Eq, Show)
+         , getName :: RoomName
+         , northExit :: Maybe RoomName
+         , eastExit :: Maybe RoomName
+         , westExit :: Maybe RoomName
+         , southExit :: Maybe RoomName
+         , northeastExit :: Maybe RoomName
+         , northwestExit :: Maybe RoomName
+         , southeastExit :: Maybe RoomName
+         , southwestExit :: Maybe RoomName
+         , getItems :: [Item]
+         , getUnits :: [Unit]
+         } deriving (Eq, Show)
 
 
 take :: Rooms -> Player -> Item -> World
 take rs p i =
   ((removeItem i rs), (addItem i p))
+
+addItem :: Item -> Player -> Player
+addItem i p =
+  let inventory' = (++) i $ getInventory p in
+    mkPlayer { getInventory = inventory'
+             , getLocation  = getLocation p
+             , getHealth    = getHealth p
+             }
 
 removeItem :: Item -> Rooms -> Rooms
 removeItem i (rd:rs) | rs == [] = [rd]
