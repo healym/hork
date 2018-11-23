@@ -2,14 +2,6 @@ module Lib where
 
 import Data.List
 
-{- Functions:
-      Use -- defined per-item
-      Take
-      Put
-      Go
-      Look
--}
-
 newtype Description = Description String
 newtype RoomName = RoomName String
 newtype ItemName = Itemname String
