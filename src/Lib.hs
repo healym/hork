@@ -1,5 +1,7 @@
 module Lib where
 
+import Data.List
+
 {- Functions:
       Use -- defined per-item
       Take
@@ -52,6 +54,9 @@ data Room =
          , getUnits :: [Unit]
          } deriving (Eq, Show)
 
+look :: Rooms -> RoomName -> Maybe Description
+look rs n = getDescription <$> lookup n rs
+
 move :: Player -> Maybe RoomName -> Player
 move p Nothing = p
 move p Just name =
@@ -65,16 +70,19 @@ put rs n p i =
   ((addItem i n rs), (removeItem i p))
 
 addItem :: Rooms -> Item -> RoomName -> Rooms
-addItem (r:rs) i n =
+addItem rs i n =
   let
-    (n', r') = r
+    room = lookup n rs
+    room' = addItem' i <$> room
   in
-    case n == n' of
-      True -> (++) (addItem' i r) $ addItem rs
-      False -> (++) r $ addItem rs
+    case room' of
+      Nothing -> rs
+      Just r -> case room of
+                  Nothing -> rs
+                  Just r' -> (++) (n, r) $ delete (n, r') rs
 
-addItem' :: Item -> (RoomName, Room) -> (RoomName, Room)
-addItem' item (name, room) =
+addItem' :: Item -> Room -> Room
+addItem' item room =
   MkRoom { getItems = (++) item $ getItems room
          , getDescription = getDescription room
          , getName = getName room
@@ -109,33 +117,32 @@ addItem i p =
              }
 
 removeItem :: Rooms -> Item -> RoomName -> Rooms
-removeItem (r:rs) i n =
+removeItem rs i n =
   let
-    (n', r') = r
+    room = lookup n rs
+    room' = removeItem' i <$> room
   in
-    case n == n' of
-      True  -> (++) (removeItem' i r) $ removeItem rs
-      False -> (++) r $ removeItem rs
+    case room' of
+      Nothing -> rs
+      Just r  -> case room of
+                   Nothing -> rs
+                   Just r' -> (++) (n, r) $ delete (n, r') rs
 
-removeItem' :: Item -> (RoomName, Room) -> (RoomName, Room)
-removeItem' i (name, room) =
-  let
-    items = [ i' | i' /= i, i'<-(getItems r)]
-    room' = MkRoom { getItems = items
-                   , getDescription = getDescription room
-                   , getName = getName room
-                   , northExit = northExit room
-                   , eastExit = eastExit room
-                   , westExit = westExit room
-                   , southExit = southExit room
-                   , northeastExit = northeastExit room
-                   , northwestExit = northwestExit room
-                   , southeastExit = southeastExit room
-                   , southwestExit = southwestExit room
-                   , getUnits = getUnits room
-                   }
-  in
-    (name, room')
+removeItem' :: Item -> Room -> Room
+removeItem' i room =
+MkRoom { getItems = [ i' | i' /= i, i'<-(getItems r)]
+       , getDescription = getDescription room
+       , getName = getName room
+       , northExit = northExit room
+       , eastExit = eastExit room
+       , westExit = westExit room
+       , southExit = southExit room
+       , northeastExit = northeastExit room
+       , northwestExit = northwestExit room
+       , southeastExit = southeastExit room
+       , southwestExit = southwestExit room
+       , getUnits = getUnits room
+       }
 
 
 {-
