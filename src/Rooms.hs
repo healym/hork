@@ -2,6 +2,16 @@ module Rooms where
 
 import Lib
 
+
+{-
+  constants to hold room names
+-}
+let
+    YARD = "Yard"
+    KITCHEN = "Kitchen"
+    LIVINGROOM = "Living Room"
+  in
+
 livingRoom = MkRoom { getDescription = Description "living room desc"
 , getName = RoomName LIVINGROOM
 , northExit = Nothing

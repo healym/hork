@@ -10,15 +10,6 @@ import Data.List
       Look
 -}
 
-{-
-  constants to hold room names
--}
-let
-  YARD = "Yard"
-  KITCHEN = "Kitchen"
-  LIVINGROOM = "Living Room"
-in
-
 newtype Description = Description String
 newtype RoomName = RoomName String
 newtype ItemName = Itemname String
