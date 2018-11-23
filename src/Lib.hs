@@ -33,6 +33,8 @@ data Player =
 data Item =
   MkItem { getName :: ItemName
          , getUse :: World -> World
+         , getTake :: Maybe ( Rooms -> RoomName -> Player -> Item -> World )
+         , getPut :: Maybe ( Rooms -> RoomName -> Player -> Item -> World )
          } deriving (Eq, Show)
 
 data Room =
@@ -50,23 +52,70 @@ data Room =
          , getUnits :: [Unit]
          } deriving (Eq, Show)
 
+move :: Player -> Maybe RoomName -> Player
+move p Nothing = p
+move p Just name =
+  MkPlayer { getInventory = getInventory p
+           , getLocation = name
+           , getHealth = getHealth p
+           }
 
-take :: Rooms -> Player -> Item -> World
-take rs p i =
-  ((removeItem i rs), (addItem i p))
+put :: Rooms -> RoomName -> Player -> Item -> World
+put rs n p i =
+  ((addItem i n rs), (removeItem i p))
+
+addItem :: Rooms -> Item -> RoomName -> Rooms
+addItem (r:rs) i n =
+  let
+    (n', r') = r
+  in
+    case n == n' of
+      True -> (++) (addItem' i r) $ addItem rs
+      False -> (++) r $ addItem rs
+
+addItem' :: Item -> (RoomName, Room) -> (RoomName, Room)
+addItem' item (name, room) =
+  MkRoom { getItems = (++) item $ getItems room
+         , getDescription = getDescription room
+         , getName = getName room
+         , northExit = northExit room
+         , eastExit = eastExit room
+         , westExit = westExit room
+         , southExit = southExit room
+         , northeastExit = northeastExit room
+         , northwestExit = northwestExit room
+         , southeastExit = southeastExit room
+         , southwestExit = southwestExit room
+         , getUnits = getUnits room
+         }
+
+removeItem :: Item -> Player -> Player
+removeItem item player =
+  MkPlayer { getInventory = [ i | i /= item, i <- getInventory player]
+           , getLocation  = getLocation p
+           , getHealth    = getHealth p
+           }
+
+take :: Rooms -> RoomName -> Player -> Item -> World
+take rs n p i =
+  ((removeItem i n rs), (addItem i p))
 
 addItem :: Item -> Player -> Player
 addItem i p =
   let inventory' = (++) i $ getInventory p in
-    mkPlayer { getInventory = inventory'
+    MkPlayer { getInventory = inventory'
              , getLocation  = getLocation p
              , getHealth    = getHealth p
              }
 
-removeItem :: Item -> Rooms -> Rooms
-removeItem i (rd:rs) | rs == [] = [rd]
-                     | hasItem i rd == True = (++) (removeItem' i rd) $ removeItem rs
-                     | otherwise = (++) rd $ removeItem rs
+removeItem :: Rooms -> Item -> RoomName -> Rooms
+removeItem (r:rs) i n =
+  let
+    (n', r') = r
+  in
+    case n == n' of
+      True  -> (++) (removeItem' i r) $ removeItem rs
+      False -> (++) r $ removeItem rs
 
 removeItem' :: Item -> (RoomName, Room) -> (RoomName, Room)
 removeItem' i (name, room) =
@@ -88,9 +137,10 @@ removeItem' i (name, room) =
   in
     (name, room')
 
-hasItem :: Item -> (RoomName, Room)
-hasItem i (name, room) = elem i (getItems room)
 
+{-
+    Example Rooms
+-}
 
 livingRoom = MkRoom { getDescription = Description "living room desc"
                     , getName = RoomName LIVINGROOM
