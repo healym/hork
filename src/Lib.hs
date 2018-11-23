@@ -67,48 +67,20 @@ move p Just name =
 
 put :: Rooms -> RoomName -> Player -> Item -> World
 put rs n p i =
-  ((addItem i n rs), (removeItem i p))
+  ((addItemToRoom i n rs), (removeItemFromPlayer i p))
 
-addItem :: Rooms -> Item -> RoomName -> Rooms
-addItem rs i n =
-  let
-    room = lookup n rs
-    room' = addItem' i <$> room
-  in
-    case room' of
-      Nothing -> rs
-      Just r -> case room of
-                  Nothing -> rs
-                  Just r' -> (++) (n, r) $ delete (n, r') rs
+take :: Rooms -> RoomName -> Player -> Item -> World
+take rs n p i =
+  ((removeItemFromRoom i n rs), (addItemToPlayer i p))
 
-addItem' :: Item -> Room -> Room
-addItem' item room =
-  MkRoom { getItems = (++) item $ getItems room
-         , getDescription = getDescription room
-         , getName = getName room
-         , northExit = northExit room
-         , eastExit = eastExit room
-         , westExit = westExit room
-         , southExit = southExit room
-         , northeastExit = northeastExit room
-         , northwestExit = northwestExit room
-         , southeastExit = southeastExit room
-         , southwestExit = southwestExit room
-         , getUnits = getUnits room
-         }
-
-removeItem :: Item -> Player -> Player
-removeItem item player =
+removeItemFromPlayer :: Item -> Player -> Player
+removeItemFromPlayer item player =
   MkPlayer { getInventory = [ i | i /= item, i <- getInventory player]
            , getLocation  = getLocation p
            , getHealth    = getHealth p
            }
 
-take :: Rooms -> RoomName -> Player -> Item -> World
-take rs n p i =
-  ((removeItem i n rs), (addItem i p))
-
-addItem :: Item -> Player -> Player
+addItemToPlayer :: Item -> Player -> Player
 addItem i p =
   let inventory' = (++) i $ getInventory p in
     MkPlayer { getInventory = inventory'
@@ -116,11 +88,11 @@ addItem i p =
              , getHealth    = getHealth p
              }
 
-removeItem :: Rooms -> Item -> RoomName -> Rooms
-removeItem rs i n =
+removeItemFromRoom :: Rooms -> Item -> RoomName -> Rooms
+removeItemFromRoom rs i n =
   let
     room = lookup n rs
-    room' = removeItem' i <$> room
+    room' = removeItemFromRoom' i <$> room
   in
     case room' of
       Nothing -> rs
@@ -128,8 +100,8 @@ removeItem rs i n =
                    Nothing -> rs
                    Just r' -> (++) (n, r) $ delete (n, r') rs
 
-removeItem' :: Item -> Room -> Room
-removeItem' i room =
+removeItemFromRoom' :: Item -> Room -> Room
+removeItemFromRoom' i room =
 MkRoom { getItems = [ i' | i' /= i, i'<-(getItems r)]
        , getDescription = getDescription room
        , getName = getName room
@@ -144,50 +116,30 @@ MkRoom { getItems = [ i' | i' /= i, i'<-(getItems r)]
        , getUnits = getUnits room
        }
 
+addItemToRoom :: Rooms -> Item -> RoomName -> Rooms
+addItemToRoom rs i n =
+  let
+    room = lookup n rs
+    room' = addItemToRoom' i <$> room
+  in
+    case room' of
+      Nothing -> rs
+      Just r -> case room of
+                  Nothing -> rs
+                  Just r' -> (++) (n, r) $ delete (n, r') rs
 
-{-
-    Example Rooms
--}
-
-livingRoom = MkRoom { getDescription = Description "living room desc"
-                    , getName = RoomName LIVINGROOM
-                    , northExit = Nothing
-                    , eastExit = Nothing
-                    , westExit = Nothing
-                    , southExit = Just KITCHEN
-                    , northwestExit = Nothing
-                    , northeastExit = Nothing
-                    , southwestExit = Nothing
-                    , southeastExit = Nothing
-                    , getItems = []
-                    , getUnits = []
-                    }
-
-kitchen = MkRoom { getDescription = Description "kitchen"
-                 , getName = RoomName KITCHEN
-                 , northExit = Just LIVINGROOM
-                 , eastExit = Nothing
-                 , westExit = KITCHEN
-                 , southExit = Nothing
-                 , northwestExit = Nothing
-                 , northeastExit = Nothing
-                 , southwestExit = Nothing
-                 , southeastExit = Nothing
-                 , getItems = []
-                 , getUnits = []
-                 }
-
-yard = MkRoom { getDescription = Description "yard"
-              , getName = RoomName YARD
-              , northExit = Nothing
-              , eastExit = KITCHEN
-              , westExit = Nothing
-              , southExit = Nothing
-              , northwestExit = Nothing
-              , northeastExit = Nothing
-              , southwestExit = Nothing
-              , southeastExit = Nothing
-              , getItems = []
-              , getUnits = []
-              }
-
+addItemToRoom' :: Item -> Room -> Room
+addItemToRoom' item room =
+  MkRoom { getItems = (++) item $ getItems room
+        , getDescription = getDescription room
+        , getName = getName room
+        , northExit = northExit room
+        , eastExit = eastExit room
+        , westExit = westExit room
+        , southExit = southExit room
+        , northeastExit = northeastExit room
+        , northwestExit = northwestExit room
+        , southeastExit = southeastExit room
+        , southwestExit = southwestExit room
+        , getUnits = getUnits room
+        }
