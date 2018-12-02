@@ -40,3 +40,8 @@ yardRoom = MkRoom { getDescription = Description "yard"
          , getRoomName = yard
          , getExits = [(East, kitchen)]
          }
+
+rooms = [ (yard, yardRoom)
+        , (kitchen, kitchenRoom)
+        , (den, denRoom)
+        ]

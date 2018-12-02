@@ -20,8 +20,7 @@ data Direction =
 type Rooms = [(RoomName, Room)]
 
 data State =
-  MkState { getRooms :: Rooms
-          , getItemLocations :: ItemLocations
+  MkState { getItemLocations :: ItemLocations
           , getPlayer :: Player
           }
 

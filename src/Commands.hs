@@ -2,6 +2,7 @@ module Commands where
 
 
 import Data.Char
+import Data.Maybe
 import Rooms
 import Game
 
@@ -38,14 +39,49 @@ parseLine raw =
             , getObject = tail $ words raw
             }
 
-take :: State -> RoomName -> Item -> State
-take = undefined
+takeItem :: State -> RoomName -> ItemName -> State
+takeItem state rname item =
+  let
+    player = getPlayer state
+    item' = if elem item $ fromJust $ lookup rname $ getItemLocations state then [item] else []
+    player' = MkPlayer { getInventory = (++) item' $ getInventory player
+                       , getLocation = getLocation player
+                       , getHealth = getHealth player
+                       , getScore = getScore player
+                       }
+    itemLocList = fromJust $ lookup rname $ getItemLocations state
+    itemLocList' = [ i | i <- itemLocList, i /= item ]
+    itemLocPair = (rname, itemLocList')
+    itemLoc = [ p | p <- getItemLocations state, p /= (rname, itemLocList) ] ++ [itemLocPair]
+  in
+    MkState { getItemLocations = itemLoc
+            , getPlayer = player'
+            }
 
-put :: State -> RoomName -> Item -> State
-put = undefined
+putItem :: State -> RoomName -> ItemName -> State
+putItem state rname item =
+  let
+    player = getPlayer state
+    item' = if elem item (getInventory player) then [item] else []
+    itemLocList = fromJust $ lookup rname $ getItemLocations state
+    itemLocList' = itemLocList ++ item'
+    itemLocPair = (rname, itemLocList')
+    itemLoc = [ p | p <- getItemLocations state, p /= (rname, itemLocList) ] ++ [itemLocPair]
+  in
+    MkState { getItemLocations = itemLoc
+            , getPlayer = getPlayer state
+            }
 
-getItemFromInventory :: Player -> ItemName -> Maybe Item
-getItemFromInventory player name =
-  case elem name (getInventory player) of
-    True -> lookup name items
-    False -> Nothing
+
+move :: Player -> Direction -> Player
+move player direction =
+  do
+    currentLocation <- getLocation player
+    currentRoom <- lookup currentLocations rooms
+    adjRooms <- getExits currentRoom
+    nextLocation <- lookup direction adjRooms
+    MkPlayer { getInventory = getInventory player
+             , getLocation = newRoomName
+             , getHealth = getHealth player
+             , getScore = getScore player
+             }
