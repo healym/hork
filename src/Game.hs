@@ -2,46 +2,76 @@ module Game where
 
 import Rooms
 
-bin = MkItem { getUse = Nothing
-             , getPut = True
-             , getTake = False
-             }
+bucketName = "a bucket"
+bucket = MkItem { getUse = Nothing
+                , getPut = True
+                , getTake = True
+                }
 
-
+whiskeyName = "a bottle of whiskey"
 whiskey = MkItem { getUse = Nothing
                  , getPut = True
-                 , getTake = False
+                 , getTake = True
                  }
 
-items = [ ("Bin", bin)
-        , ("Whiskey", whiskey)
+frogName = "a frog"
+frog = MkItem { getUse = Nothing
+              , getPut = True
+              , getTake = True
+              }
+
+chainName = "a chain"
+chain = MkItem { getUse = Nothing
+               , getPut = True
+               , getTake = True
+               }
+
+items = [ (bucketName, bucket)
+        , (whiskeyName, whiskey)
+        , (frogName, frog)
+        , (chainName, chain)
         ]
 
-kitchen = RoomName "Kitchen"
-den = RoomName "Den"
-yard = RoomName "Yard"
+den = RoomName "Living Room"
+attic = RoomName "Attic"
+garden = RoomName "Garden"
 
-denRoom :: Room
-denRoom = MkRoom { getDescription = Description "living room desc"
-                 , getRoomName = den
-                 , getExits = [(South, kitchen)]
-                 }
+livingRoom :: Room
+livingRoom = MkRoom { getDescription = (Description "You are in the living-room. A wizard is snoring loudly on the couch.")
+                    , getRoomName = den
+                    , getExits = [ (Up, attic)
+                                 , (West, garden)
+                                 ]
+                    }
 
-kitchenRoom :: Room
-kitchenRoom = MkRoom { getDescription = Description "kitchen"
-                     , getRoomName = kitchen
-                     , getExits = [ (North, den)
-                                  , (West, yard)
-                                  ]
+atticRoom :: Room
+atticRoom = MkRoom { getDescription = (Description "You are in the attic. There is a giant welding torch in the corner.")
+                     , getRoomName = attic
+                     , getExits = [ (Down, den)]
                      }
 
-yardRoom :: Room
-yardRoom = MkRoom { getDescription = Description "yard"
-         , getRoomName = yard
-         , getExits = [(East, kitchen)]
-         }
+gardenRoom :: Room
+gardenRoom = MkRoom { getDescription = (Description "You are in a beautiful garden. There is a well in front of you.")
+                    , getRoomName = garden
+                    , getExits = [(East, den)]
+                    }
 
-rooms = [ (yard, yardRoom)
-        , (kitchen, kitchenRoom)
-        , (den, denRoom)
+rooms = [ (garden, gardenRoom)
+        , (den, livingRoom)
+        , (attic, atticRoom)
         ]
+
+player :: Player
+player = MkPlayer { getInventory = []
+                  , getLocation = den
+                  , getHealth = 100
+                  , getScore = 0
+                  }
+
+state :: State
+state = MkState { getItemLocations = [ (garden, [frogName, chainName])
+                                     , (den, [whiskeyName, bucketName])
+                                     , (attic, [])
+                                     ]
+                , getPlayer = player
+                }

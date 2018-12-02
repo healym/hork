@@ -15,6 +15,8 @@ data Direction =
   | SouthWest
   | West
   | NorthWest
+  | Up
+  | Down
   deriving (Eq, Show)
 
 type Rooms = [(RoomName, Room)]
