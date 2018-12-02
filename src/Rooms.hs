@@ -1,55 +1,50 @@
 module Rooms where
 
-import Lib
+newtype Description = Description String deriving (Eq, Show)
+
+newtype RoomName = RoomName String deriving (Eq, Show)
+
+type ItemLocations = [(RoomName, [ItemName])]
+
+data Direction =
+    North
+  | NorthEast
+  | East
+  | SouthEast
+  | South
+  | SouthWest
+  | West
+  | NorthWest
+  deriving (Eq, Show)
+
+type Rooms = [(RoomName, Room)]
+
+data State =
+  MkState { getRooms :: Rooms
+          , getItemLocations :: ItemLocations
+          , getPlayer :: Player
+          }
+
+data Player =
+  MkPlayer { getInventory :: Inventory
+           , getLocation :: RoomName
+           , getHealth :: Int
+           , getScore :: Int
+           }
+
+data Room =
+  MkRoom { getDescription :: Description
+         , getRoomName :: RoomName
+         , getExits :: [(Direction, RoomName)]
+         }
 
 
-{-
-  constants to hold room names
--}
-let
-    YARD = "Yard"
-    KITCHEN = "Kitchen"
-    LIVINGROOM = "Living Room"
-  in
+type ItemName = String
 
-livingRoom = MkRoom { getDescription = Description "living room desc"
-, getName = RoomName LIVINGROOM
-, northExit = Nothing
-, eastExit = Nothing
-, westExit = Nothing
-, southExit = Just KITCHEN
-, northwestExit = Nothing
-, northeastExit = Nothing
-, southwestExit = Nothing
-, southeastExit = Nothing
-, getItems = []
-, getUnits = []
-}
+type Inventory = [ItemName]
 
-kitchen = MkRoom { getDescription = Description "kitchen"
-, getName = RoomName KITCHEN
-, northExit = Just LIVINGROOM
-, eastExit = Nothing
-, westExit = KITCHEN
-, southExit = Nothing
-, northwestExit = Nothing
-, northeastExit = Nothing
-, southwestExit = Nothing
-, southeastExit = Nothing
-, getItems = []
-, getUnits = []
-}
-
-yard = MkRoom { getDescription = Description "yard"
-, getName = RoomName YARD
-, northExit = Nothing
-, eastExit = KITCHEN
-, westExit = Nothing
-, southExit = Nothing
-, northwestExit = Nothing
-, northeastExit = Nothing
-, southwestExit = Nothing
-, southeastExit = Nothing
-, getItems = []
-, getUnits = []
-}
+data Item =
+    MkItem { getUse :: Maybe ( State -> State )
+           , getTake :: Bool
+           , getPut :: Bool
+           }

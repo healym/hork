@@ -1,6 +1,9 @@
 module Main where
 
-import Lib
+import Commands
+
+someFunc :: IO ()
+someFunc = print "Hello World!"
 
 main :: IO ()
 main = someFunc

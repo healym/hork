@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: c7d27fb31e13f6a9ebc949a9c21db54f43e07c0bd4d7fea5cc4f615a372feedb
+-- hash: 7786a5fcd3ba101fbac6e5bcb7ef0db3c60c972d3853062af71cdd938866395f
 
 name:           hork
 version:        0.1.0.0
@@ -27,7 +27,8 @@ source-repository head
 
 library
   exposed-modules:
-      Lib
+      Commands
+      Game
       Rooms
   other-modules:
       Paths_hork
