@@ -2,28 +2,32 @@ module Game where
 
 import Rooms
 
-bucketName = "a bucket"
+bucketName = "bucket"
 bucket = MkItem { getUse = Nothing
                 , getPut = True
                 , getTake = True
+                , getDisplay = "a bucket"
                 }
 
-whiskeyName = "a bottle of whiskey"
+whiskeyName = "whiskey"
 whiskey = MkItem { getUse = Nothing
                  , getPut = True
                  , getTake = True
+                 , getDisplay = "a bottle of whiskey"
                  }
 
-frogName = "a frog"
+frogName = "frog"
 frog = MkItem { getUse = Nothing
               , getPut = True
               , getTake = True
+              , getDisplay = "a frog"
               }
 
-chainName = "a chain"
+chainName = "chain"
 chain = MkItem { getUse = Nothing
                , getPut = True
                , getTake = True
+               , getDisplay = "a chain"
                }
 
 items = [ (bucketName, bucket)

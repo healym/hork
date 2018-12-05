@@ -14,6 +14,7 @@ data Action =
   | Use
   | Inventory
   | Quit
+  | Help
   deriving (Eq, Show)
 
 type Object = [String]
@@ -32,8 +33,19 @@ parseAction actionString =
         "TAKE"      -> Just Take
         "USE"       -> Just Use
         "INVENTORY" -> Just Inventory
-        "QUIT"      -> Just Quit
+        "HELP"      -> Just Help
         _           -> Nothing
+
+helpMesg :: String
+helpMesg = "AVAILABLE COMMANDS:" ++
+           "   COMMAND               EFFECT  " ++
+           "MOVE <DIRECTION> -> Move in a given direction." ++
+           "LOOK             -> Look at your surroundings." ++
+           "PUT <ITEM>       -> Drop an item in your inventory." ++
+           "TAKE <ITEM>      -> Take an item into your inventory." ++
+           "USE <ITEM>       (NOT YET IMPLEMENTED)" ++
+           "INVENTORY        -> Show your inventory." ++
+           "HELP             -> Show this help menu."
 
 parseLine :: String -> Command
 parseLine raw =
@@ -41,13 +53,64 @@ parseLine raw =
             , getObject = tail $ words raw
             }
 
-take :: State -> RoomName -> ItemName -> State
-take state rname iname =
-  case getTake $ fromJust $ lookup iname items of
-    False -> state
-    True -> case rname == (getLocation $ getPlayer state) of
-                True -> takeItem state rname iname
-                _     -> state
+parseCommand :: State -> Command -> (State, String)
+parseCommand state command =
+  case getAction command of
+    Nothing   -> (state, "I don't know how to do that.")
+    Just Move -> let
+                   mDir = stringToDir $ head $ getObject command
+                   state' = move state 
+                 in
+                   case mDir of
+                    Nothing -> (state, "I don't know where you want me to go.")
+                    Just dir -> let state' = move state dir in (state', (look state'))
+    Just Look -> (state, look state)
+    Just Take -> let
+                   item = head $ getObject command
+                   state' = Commands.take state item
+                   ploc = getLocation $ getPlayer state
+                   ilocs = getItemLocations state
+                 in case elem item (fromJust $ lookup ploc ilocs) of
+                   True -> (state', "Took the " ++ item ++ ".")
+                   False -> (state, "I don't see that.")
+    Just Put -> let
+                  item = head $ getObject command
+                  state' = Commands.put state item
+                  inventory = getInventory $ getPlayer state
+                in case elem item inventory of
+                  True -> (state', "Okay.")
+                  False -> (state, "I don't have that.")
+    Just Inventory -> (state, (showInventory state))
+    Just Use -> (state, "Feature not yet implemented™")
+    Just Help -> (state, helpMesg)
+    _ -> (state, "I'm not sure what you mean.")
+
+parseInput :: State -> String -> (State, String)
+parseInput state = (parseCommand state) . parseLine
+
+
+take :: State -> ItemName -> State
+take state iname =
+  let
+    ploc = getLocation $ getPlayer state
+    ilocs = getItemLocations state
+  in
+    case getTake $ fromJust $ lookup iname items of
+      False -> state
+      True -> case elem iname (fromJust $ lookup ploc ilocs) of
+                  True -> takeItem state ploc iname
+                  _     -> state
+
+put :: State -> ItemName -> State
+put state iname =
+  let
+    ploc = getLocation $ getPlayer state
+  in
+    case getPut $ fromJust $ lookup iname items of
+      False -> state
+      True -> case elem iname (getInventory $ getPlayer state) of
+                False -> state
+                True -> putItem state ploc iname
 
 takeItem :: State -> RoomName -> ItemName -> State
 takeItem state rname item =
@@ -72,14 +135,20 @@ putItem :: State -> RoomName -> ItemName -> State
 putItem state rname item =
   let
     player = getPlayer state
+    inventory = [ i | i <- getInventory player, i /= item ]
     item' = if elem item (getInventory player) then [item] else []
     itemLocList = fromJust $ lookup rname $ getItemLocations state
     itemLocList' = itemLocList ++ item'
     itemLocPair = (rname, itemLocList')
     itemLoc = [ p | p <- getItemLocations state, p /= (rname, itemLocList) ] ++ [itemLocPair]
+    player' = MkPlayer { getInventory = inventory
+                       , getLocation = getLocation player
+                       , getHealth = getHealth player
+                       , getScore = getScore player
+                       }
   in
     MkState { getItemLocations = itemLoc
-            , getPlayer = getPlayer state
+            , getPlayer = player'
             }
 
 
@@ -94,35 +163,42 @@ move' player direction =
                   , getScore = getScore player
                   }
 
-move :: Player -> Direction -> Player
-move p d =
-  let p' = move' p d in
-    case p' of
-      Just p'' -> p''
-      Nothing  -> p
-
-look :: Player -> State -> String
-look player state =
+move :: State -> Direction -> State
+move s d =
   let
+    p = getPlayer s
+    p' = move' p d
+  in
+    case p' of
+      Just p'' -> MkState { getPlayer = p'', getItemLocations = getItemLocations s}
+      Nothing  -> s
+
+look :: State -> String
+look state =
+  let
+    player = getPlayer state
     room = lookup (getLocation player) rooms
     desc = fromJust $ getDescription <$> room
     exits = fromJust $ getExits <$> room
-    itemString = getItemDescriptions player state
+    itemString = getItemDescriptions state
   in
     parseDescription (desc, exits) ++ itemString
 
-getItemDescriptions :: Player -> State -> String
-getItemDescriptions player state =
+getItemDescriptions :: State -> String
+getItemDescriptions state =
   let
-    lst = (lookup (getLocation player) (getItemLocations state))
+    lst = (lookup (getLocation $ getPlayer state) (getItemLocations state))
   in
-    "Here you see a " ++ (listItems $ fromJust $ lst)
+    if (length $ fromJust lst) > 0 then
+      "Here you see " ++ (listItems $ fromJust $ lst)
+    else
+      ""
 
 listItems :: [ItemName] -> String
 listItems [] = ""
-listItems (i : []) = i
-listItems (i : (i': [])) = i ++ ", and " ++ i'
-listItems (i : is) = i ++ ", " ++ listItems is
+listItems (i : []) = getDisplay $ fromJust $ lookup i items
+listItems (i : (i': [])) = (getDisplay $ fromJust $ lookup i items) ++ ", and " ++ (getDisplay $ fromJust $ lookup i' items)
+listItems (i : is) = (getDisplay $ fromJust $ lookup i items) ++ ", " ++ listItems is
 
 parseDescription :: (Description, [(Direction, RoomName)]) -> String
 parseDescription (Description desc, dirs) =
@@ -148,11 +224,10 @@ parseDescription' ((dir, _) : dirs) =
             Up        -> "upward"
             Down      -> "downward"
 
-showInventory :: Player -> String
-showInventory player = (++) "You are carrying:\n" $ showInventory' $ getInventory player
+showInventory :: State -> String
+showInventory state = (++) "You are carrying:\n" $ showInventory' $ getInventory $ getPlayer state
 
 showInventory' :: [ItemName] -> String
 showInventory' [] = ""
-showInventory' (i : []) = i
-showInventory' (i : (i' : [])) = "and " ++ i ++ "\n"
-showInventory' (i : is) = i ++ ",\n" ++ showInventory' is
+showInventory' (i : []) = getDisplay $ fromJust $ lookup i items
+showInventory' (i : is) = (getDisplay $ fromJust $ lookup i items) ++ ",\n" ++ showInventory' is

@@ -1,9 +1,15 @@
 module Main where
 
+import Rooms
+import Game
 import Commands
 
-someFunc :: IO ()
-someFunc = print "Hello World!"
+play :: State -> IO ()
+play state = do
+    input <- getLine
+    let (state', mesg) = parseInput state input
+    putStrLn mesg
+    play state'
 
 main :: IO ()
-main = someFunc
+main = play state
