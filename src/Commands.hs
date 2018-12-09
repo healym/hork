@@ -38,14 +38,14 @@ parseAction actionString =
 
 helpMesg :: String
 helpMesg = "AVAILABLE COMMANDS:" ++
-           "   COMMAND               EFFECT  " ++
-           "MOVE <DIRECTION> -> Move in a given direction." ++
-           "LOOK             -> Look at your surroundings." ++
-           "PUT <ITEM>       -> Drop an item in your inventory." ++
-           "TAKE <ITEM>      -> Take an item into your inventory." ++
-           "USE <ITEM>       (NOT YET IMPLEMENTED)" ++
-           "INVENTORY        -> Show your inventory." ++
-           "HELP             -> Show this help menu."
+           "   COMMAND               EFFECT  \n" ++
+           "MOVE <DIRECTION> -> Move in a given direction.\n" ++
+           "LOOK             -> Look at your surroundings.\n" ++
+           "PUT <ITEM>       -> Drop an item in your inventory.\n" ++
+           "TAKE <ITEM>      -> Take an item into your inventory.\n" ++
+           "USE <ITEM>       (NOT YET IMPLEMENTED)\n" ++
+           "INVENTORY        -> Show your inventory.\n" ++
+           "HELP             -> Show this help menu.\n"
 
 parseLine :: String -> Command
 parseLine raw =
