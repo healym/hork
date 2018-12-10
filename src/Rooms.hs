@@ -62,7 +62,7 @@ type ItemName = String
 type Inventory = [ItemName]
 
 data Item =
-    MkItem { getUse :: Maybe ( State -> State )
+    MkItem { getUse :: Maybe ( State -> (State, String) )
            , getTake :: Bool
            , getPut :: Bool
            , getDisplay :: String

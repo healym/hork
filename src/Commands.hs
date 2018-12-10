@@ -43,7 +43,7 @@ helpMesg = "AVAILABLE COMMANDS:" ++
            "LOOK             -> Look at your surroundings.\n" ++
            "PUT <ITEM>       -> Drop an item in your inventory.\n" ++
            "TAKE <ITEM>      -> Take an item into your inventory.\n" ++
-           "USE <ITEM>       (NOT YET IMPLEMENTED)\n" ++
+           "USE <ITEM>       -> Use an item.\n" ++
            "INVENTORY        -> Show your inventory.\n" ++
            "HELP             -> Show this help menu.\n"
 
@@ -81,7 +81,16 @@ parseCommand state command =
                   True -> (state', "Okay.")
                   False -> (state, "I don't have that.")
     Just Inventory -> (state, (showInventory state))
-    Just Use -> (state, "Feature not yet implemented™")
+    Just Use -> let
+                  item = head $ getObject command
+                  item' = fromJust $ lookup item items
+                  inventory = getInventory $ getPlayer state
+                in
+                  case elem item inventory of
+                    False -> (state, "I'd have to have that first.")
+                    True -> case getUse item' of
+                              Nothing -> (state, "I don't know how to use that")
+                              Just f -> f state
     Just Help -> (state, helpMesg)
     _ -> (state, "I'm not sure what you mean.")
 
@@ -225,7 +234,9 @@ parseDescription' ((dir, _) : dirs) =
             Down      -> "downward"
 
 showInventory :: State -> String
-showInventory state = (++) "You are carrying:\n" $ showInventory' $ getInventory $ getPlayer state
+showInventory state = ((++) "You are carrying:\n" $ showInventory' $ getInventory $ getPlayer state)
+                      ++ "\n\nYour health is: " ++ (show $ getHealth $ getPlayer state)
+                      ++ "\nYour score is: " ++ (show $ getScore $ getPlayer state) ++ "\n"
 
 showInventory' :: [ItemName] -> String
 showInventory' [] = ""
