@@ -95,7 +95,8 @@ parseCommand state command =
     _ -> (state, "I'm not sure what you mean.")
 
 parseInput :: State -> String -> (State, String)
-parseInput state = (parseCommand state) . parseLine
+parseInput state "" = (state, "")
+parseInput state string = (parseCommand state) . parseLine $ string
 
 
 take :: State -> ItemName -> State

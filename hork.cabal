@@ -38,7 +38,7 @@ library
       base >=4.7 && <5
   default-language: Haskell2010
 
-executable hork-exe
+executable hork
   main-is: Main.hs
   other-modules:
       Paths_hork
